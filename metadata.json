@@ -1,0 +1,6 @@
+{
+  "name": "Lernetz Ressourcenplaner",
+  "description": "Ein schlichter Ressourcenplaner für die Ausbildung bei Lernetz. Beinhaltet monatliche Planung, tägliche Routinen und Projektübersichten.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. GLOBAL SAFETY NET
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. GLOBAL HELPERS
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // 3. COLLECTION RULES
+    match /users/{userId} {
+      // Validate User Settings
+      function isValidUserSettings(data) {
+        return data.keys().hasAll(['activeProfileId', 'profiles'])
+          && data.activeProfileId is string
+          && data.profiles is list
+          && data.profiles.size() <= 20; // Guard against resource exhaustion
+      }
+
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserSettings(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserSettings(request.resource.data);
+
+      match /months/{monthKey} {
+        // monthKey format: profileId_YYYY-MM
+        
+        function isValidMonthData(data) {
+          return data.id is string 
+            && data.id.size() <= 7 // YYYY-MM
+            && data.profileId is string
+            && data.projects is list
+            && data.routines is list
+            && data.allocations is list
+            && data.projects.size() <= 50
+            && data.routines.size() <= 50
+            && data.allocations.size() <= 200;
+        }
+
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidMonthData(request.resource.data);
+        allow update: if isOwner(userId) && isValidMonthData(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

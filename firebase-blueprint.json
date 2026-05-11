@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "UserSettings": {
+      "title": "User Settings",
+      "description": "Global settings and profiles for a user",
+      "type": "object",
+      "properties": {
+        "activeProfileId": { "type": "string" },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/entities/UserProfile"
+          }
+        }
+      },
+      "required": ["activeProfileId", "profiles"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Work schedule configuration for a specific profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "workingDays": { "type": "array", "items": { "type": "number" } },
+        "hoursPerDay": { "type": "number" }
+      }
+    },
+    "MonthData": {
+      "title": "Month Data",
+      "description": "Allocations, projects and routines for a specific month and profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "profileId": { "type": "string" },
+        "projects": { "type": "array" },
+        "routines": { "type": "array" },
+        "allocations": { "type": "array" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserSettings",
+      "description": "User specific settings and profiles list"
+    },
+    "/users/{userId}/months/{monthKey}": {
+      "schema": "MonthData",
+      "description": "Planning data for a specific profile and month (monthKey = profileId_YYYY-MM)"
+    }
+  }
+}
